@@ -10,7 +10,7 @@ exports_files(
 build_test(
     name = "glib_build_test",
     targets = [
-        "@glib//:glib",
+        "@glib//:glib-meson",
     ],
     visibility = ["//:__pkg__"],
 )

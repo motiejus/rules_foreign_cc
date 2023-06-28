@@ -9,6 +9,8 @@ def glib_repositories():
         name = "glib",
         build_file = Label("//glib:BUILD.glib.bazel"),
         strip_prefix = "glib-2.75.0",
+        patches = [Label("//glib:configure.patch")],
+        patch_args = ["-p1"],
         sha256 = "6dde8e55cc4a2c83d96797120b08bcffb5f645b2e212164ae22d63c40e0e6360",
         url = "https://download.gnome.org/sources/glib/2.75/glib-2.75.0.tar.xz",
     )

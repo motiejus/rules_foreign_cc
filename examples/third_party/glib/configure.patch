@@ -1,0 +1,36 @@
+diff --git a/meson.build b/meson.build
+index 2d434ad8e..3d5f34fd0 100644
+--- a/meson.build
++++ b/meson.build
+@@ -393,23 +393,6 @@ if cc.has_header('linux/netlink.h')
+   glib_conf.set('HAVE_NETLINK', 1)
+ endif
+ 
+-# Is statx() supported? Android systems don’t reliably support it as of August 2020.
+-statx_code = '''
+-  #ifndef _GNU_SOURCE
+-  #define _GNU_SOURCE
+-  #endif
+-  #include <sys/stat.h>
+-  #include <fcntl.h>
+-  int main (void)
+-  {
+-    struct statx stat_buf;
+-    return statx (AT_FDCWD, "/", AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &stat_buf);
+-  }
+-  '''
+-if host_system != 'android' and cc.compiles(statx_code, name : 'statx() test')
+-  glib_conf.set('HAVE_STATX', 1)
+-endif
+-
+ if glib_conf.has('HAVE_LOCALE_H')
+   if cc.has_header_symbol('locale.h', 'LC_MESSAGES')
+     glib_conf.set('HAVE_LC_MESSAGES', 1)
+@@ -584,7 +567,6 @@ if host_system == 'windows'
+ endif
+ 
+ functions = [
+-  'close_range',
+   'endmntent',
+   'endservent',
+   'epoll_create',

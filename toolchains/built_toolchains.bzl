@@ -166,6 +166,8 @@ def _meson_toolchain(version, register_toolchains):
             http_archive,
             name = "meson_src",
             build_file_content = _MESON_BUILD_FILE_CONTENT,
+            patches = [Label("//toolchains:meson-zig-cc.patch")],
+            patch_args = ["-p1"],
             sha256 = "3b51d451744c2bc71838524ec8d96cd4f8c4793d5b8d5d0d0a9c8a4f7c94cd6f",
             strip_prefix = "meson-0.63.0",
             url = "https://github.com/mesonbuild/meson/releases/download/0.63.0/meson-0.63.0.tar.gz",

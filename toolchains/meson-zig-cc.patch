@@ -1,0 +1,70 @@
+commit 35c9135833168bd820b741bba9c6f6f547cfae74
+Author: Motiejus Jakštys <motiejus@jakstys.lt>
+Date:   Wed Jun 28 12:27:32 2023 +0300
+
+    linker: support "zig cc"
+    
+    Until now, if meson is invoked with `zig cc` as a compiler, it will fail
+    to detect the linker:
+    
+        $ rm -fr _build; CC="zig cc -target x86_64-linux-gnu.2.31" meson setup _build
+        The Meson build system
+        Version: 0.61.2
+        Source dir: /code/testcc
+        Build dir: /code/testcc/_build
+        Build type: native build
+        Project name: testcc
+        Project version: undefined
+    
+        meson.build:1:0: ERROR: Unable to detect linker for compiler "zig cc -target x86_64-linux-gnu.2.31 -Wl,--version"
+        stdout: zig ld 0.11.0-dev.3867+ff37ccd29
+    
+        stderr:
+    
+        A full log can be found at /code/testcc/_build/meson-logs/meson-log.txt
+    
+    With this patch:
+    
+        $ rm -fr _build; CC="zig cc -target x86_64-linux-gnu.2.31" /code/meson/meson.py setup _build
+        The Meson build system
+        Version: 1.1.99
+        Source dir: /code/testcc
+        Build dir: /code/testcc/_build
+        Build type: native build
+        Project name: testcc
+        Project version: undefined
+        C compiler for the host machine: zig cc -target x86_64-linux-gnu.2.31 (clang 16.0.1 "clang version 16.0.1 (https://github.com/ziglang/zig-bootstrap bf1b2cdb83141ad9336eec42160c9fe87f90198d)")
+        C linker for the host machine: zig cc -target x86_64-linux-gnu.2.31 ld.lld 0.11.0-dev
+        Host machine cpu family: x86_64
+        Host machine cpu: x86_64
+        Build targets in project: 1
+    
+        Found ninja-1.10.1 at /usr/bin/ninja
+
+diff --git a/mesonbuild/linkers/detect.py b/mesonbuild/linkers/detect.py
+index 31f6ddc74..168e4e352 100644
+--- a/mesonbuild/linkers/detect.py
++++ b/mesonbuild/linkers/detect.py
+@@ -161,6 +161,9 @@ def guess_nix_linker(env: 'Environment', compiler: T.List[str], comp_class: T.Ty
+     elif 'Snapdragon' in e and 'LLVM' in e:
+         linker = QualcommLLVMDynamicLinker(
+             compiler, for_machine, comp_class.LINKER_PREFIX, override, version=v)
++    elif o.startswith('zig ld '):
++        linker = LLVMDynamicLinker(
++            compiler, for_machine, comp_class.LINKER_PREFIX, override, version=v)
+     elif e.startswith('lld-link: '):
+         # The LLD MinGW frontend didn't respond to --version before version 9.0.0,
+         # and produced an error message about failing to link (when no object
+diff --git a/unittests/internaltests.py b/unittests/internaltests.py
+index 8e52fa662..57e71fc27 100644
+--- a/unittests/internaltests.py
++++ b/unittests/internaltests.py
+@@ -68,6 +68,8 @@ class InternalTests(unittest.TestCase):
+         self.assertEqual(search_version('2016.10 1.2.3'), '1.2.3')
+         self.assertEqual(search_version('oops v1.2.3'), '1.2.3')
+         self.assertEqual(search_version('2016.oops 1.2.3'), '1.2.3')
++        self.assertEqual(search_version('zig ld 0.11.0'), '0.11.0')
++        self.assertEqual(search_version('zig ld 0.11.0-dev.3867+ff37ccd29'), '0.11.0-dev')
+         self.assertEqual(search_version('2016.x'), 'unknown version')
+         self.assertEqual(search_version(r'something version is \033[32;2m1.2.0\033[0m.'), '1.2.0')
+ 

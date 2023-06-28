@@ -85,3 +85,39 @@ meson(
         "//conditions:default": DEPS,
     }),
 )
+
+meson(
+    name = "glib-meson",
+    env = select({
+        "@platforms//os:macos": {
+            "CPATH": "$$EXT_BUILD_DEPS/gettext/include",
+            "LIBRARY_PATH": "$$EXT_BUILD_DEPS/gettext/lib",
+            "PATH": "$$(dirname $$EXT_BUILD_ROOT$$/$(PYTHON3)):$$PATH",
+        },
+        "//conditions:default": {
+            "PATH": "$$(dirname $$EXT_BUILD_ROOT$$/$(PYTHON3)):$$PATH",
+        },
+    }),
+    lib_source = ":all_srcs",
+    options = {
+        "tests": "false",
+        "default_library": "static",
+        "libdir": "",
+    },
+    out_include_dir = "include/glib-2.0",
+    out_interface_libs = select({
+        "//conditions:default": [],
+    }),
+    out_lib_dir = "",
+    out_static_libs = [
+        "libgio-2.0.a",
+        "libglib-2.0.a",
+        "libgmodule-2.0.a",
+        "libgobject-2.0.a",
+        "libgthread-2.0.a",
+    ],
+    toolchains = ["@rules_python//python:current_py_toolchain"],
+    deps = select({
+        "//conditions:default": DEPS,
+    }),
+)
